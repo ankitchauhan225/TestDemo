@@ -15,10 +15,46 @@
 @implementation BaseView
 
 @synthesize txtDate,txtLastName,txtName,txtPhoneNo;
+@synthesize comefrompage,listofdata,btnSave;
 
 - (void)viewDidLoad {
+    
     [super viewDidLoad];
+    NSLog(@"listofdata:%@",listofdata);
+    
+    if ([comefrompage isEqualToString:@"edit"]) {
+        txtDate.text = [listofdata valueForKey:@"Date"];
+        txtName.text = [listofdata valueForKey:@"Name"];
+        txtLastName.text = [listofdata valueForKey:@"LastName"];
+        txtPhoneNo.text = [listofdata valueForKey:@"PhoneNo"];
+        idlist = [listofdata valueForKey:@"id"];
+        [btnSave setTitle: @"UPDATE" forState: UIControlStateNormal];
+    }
+    else
+    {
+        [btnSave setTitle: @"SAVE" forState: UIControlStateNormal];
+    }
+    
+    datePicker =[[UIDatePicker alloc]initWithFrame:CGRectMake(0, self.view.frame.size.height -200,10, 500)];
+    datePicker.datePickerMode=UIDatePickerModeDate;
+    datePicker.date=[NSDate date];
+    [datePicker addTarget:self action:@selector(LabelTitle:) forControlEvents:UIControlEventValueChanged];
+    datePicker.hidden = YES;
+    [self.view addSubview:datePicker];
+    
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hideAllKeyboards)];
+    tapGesture.cancelsTouchesInView = NO;
+    [self.view addGestureRecognizer:tapGesture];
+    
     // Do any additional setup after loading the view from its nib.
+}
+
+-(IBAction)hideAllKeyboards {
+    NSLog(@"hideAllKeyboards");
+    [txtName resignFirstResponder];
+    [txtDate resignFirstResponder];
+    [txtLastName resignFirstResponder];
+    datePicker.hidden = YES;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -73,16 +109,58 @@
     
     [self databaseOpen];
     
-    NSString *InsertQuery = [NSString stringWithFormat:@"INSERT INTO ContactList (Name,LastName,PhoneNo,Date) VALUES ('%@','%@','%@','%@')",txtName.text,txtLastName.text,txtPhoneNo.text,txtDate.text];
-    
-    BOOL Checkval = [databasecheckfmdb executeUpdate:InsertQuery];
-    
-    if (Checkval == YES) {
-        UIAlertView *Alertdata = [[UIAlertView alloc]initWithTitle:@"Save" message:@"Data saved sucessfully" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [Alertdata show];
+    if ([comefrompage isEqualToString:@"edit"]) {
+        
+     // update studentsDetail SET name='%@', department='%@', year='%@' where regno='%@'",@"name",@"dept",@"year",@"regno"
+       
+        NSString *InsertQuery = [NSString stringWithFormat:@"UPDATE ContactList SET Name = '%@', LastName = '%@', PhoneNo = '%@',Date= '%@' where id = %@",txtName.text,txtLastName.text,txtPhoneNo.text,txtDate.text,idlist];
+        
+        BOOL Checkval = [databasecheckfmdb executeUpdate:InsertQuery];
+        
+        if (Checkval == YES) {
+            UIAlertView *Alertdata = [[UIAlertView alloc]initWithTitle:@"Save" message:@"Data updated sucessfully" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [Alertdata show];
+        }
+        
+        [databasecheckfmdb close];
+    }
+    else
+    {
+        NSString *InsertQuery = [NSString stringWithFormat:@"INSERT INTO ContactList (Name,LastName,PhoneNo,Date) VALUES ('%@','%@','%@','%@')",txtName.text,txtLastName.text,txtPhoneNo.text,txtDate.text];
+        
+        BOOL Checkval = [databasecheckfmdb executeUpdate:InsertQuery];
+        
+        if (Checkval == YES) {
+            UIAlertView *Alertdata = [[UIAlertView alloc]initWithTitle:@"Save" message:@"Data saved sucessfully" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [Alertdata show];
+        }
+        
+        [databasecheckfmdb close];
     }
     
-    [databasecheckfmdb close];
+}
+
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (IBAction)BtnDatePicker:(id)sender {
+    [txtName resignFirstResponder];
+    [txtDate resignFirstResponder];
+    [txtLastName resignFirstResponder];
+    
+    datePicker.hidden=NO;
+}
+
+-(void)LabelTitle:(id)sender
+{
+    NSDateFormatter *dateFormat=[[NSDateFormatter alloc]init];
+    dateFormat.dateStyle=NSDateFormatterMediumStyle;
+    [dateFormat setDateFormat:@"MM/dd/yyyy"];
+    NSString *str=[NSString stringWithFormat:@"%@",[dateFormat  stringFromDate:datePicker.date]];
+    //assign text to label
+    txtDate.text=str;
 }
 
 @end

@@ -24,7 +24,6 @@
     
     
     listOfContact = [[NSMutableArray alloc]init];
-    [self LoadAllData];
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
 }
@@ -38,9 +37,16 @@
     [databasecheckfmdb open];
 }
 
+-(void)viewWillAppear:(BOOL)animated
+{
+    [self LoadAllData];
+    [tblData reloadData];
+}
+
 - (IBAction)BtnAddPress:(id)sender
 {
     BaseView *Basedata = [[BaseView alloc]initWithNibName:@"BaseView" bundle:nil];
+    Basedata.comefrompage = @"new";
     [self.navigationController pushViewController:Basedata animated:YES];
 }
 
@@ -91,6 +97,15 @@
     
     return cell;
 }
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    BaseView *Basedata = [[BaseView alloc]initWithNibName:@"BaseView" bundle:nil];
+    Basedata.comefrompage = @"edit";
+    Basedata.listofdata = [listOfContact objectAtIndex:indexPath.row];
+    [self.navigationController pushViewController:Basedata animated:YES];
+}
+
 
 /*
 #pragma mark - Navigation

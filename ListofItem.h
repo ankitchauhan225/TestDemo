@@ -10,7 +10,7 @@
 #import "ListofItemCell.h"
 #import "FMDatabase.h"
 
-@interface ListofItem : UIViewController
+@interface ListofItem : UIViewController<UITableViewDataSource,UITableViewDelegate>
 {
     NSMutableArray *listOfContact;
     FMDatabase *databasecheckfmdb;
